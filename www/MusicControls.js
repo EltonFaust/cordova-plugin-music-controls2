@@ -25,6 +25,7 @@ var musicControls = {
     data.nextIcon = !isUndefined(data.nextIcon) ? data.nextIcon : "";
     data.closeIcon = !isUndefined(data.closeIcon) ? data.closeIcon : "";
     data.notificationIcon = !isUndefined(data.notificationIcon) ? data.notificationIcon : "";
+    data.createAudioHandler = !isUndefined(data.createAudioHandler) ? data.createAudioHandler : false;
 
     cordova.exec(successCallback, errorCallback, "MusicControls", "create", [
       data

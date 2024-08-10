@@ -14,6 +14,7 @@ updates to npm to make life easier for everyone.
 - Android (4.1+) ([homerours](https://github.com/homerours))
 - Windows (10+, by [filfat](https://github.com/filfat))
 - iOS 8+ (by [0505gonzalez](https://github.com/0505gonzalez))
+- Browser (by [EltonFaust](https://github.com/EltonFaust))
 
 ## Installation
 - Current release
@@ -39,15 +40,16 @@ MusicControls.create({
 	hasNext   : false,		// show next button, optional, default: true
 	hasClose  : true,		// show close button, optional, default: false
 
-	// iOS only, optional
-	
+	// iOS/Browser only, optional
 	duration : 60, // optional, default: 0
 	elapsed : 10, // optional, default: 0
-  	hasSkipForward : true, //optional, default: false. true value overrides hasNext.
-  	hasSkipBackward : true, //optional, default: false. true value overrides hasPrev.
-  	skipForwardInterval : 15, //optional. default: 0.
+	hasSkipForward : true, //optional, default: false. true value overrides hasNext.
+	hasSkipBackward : true, //optional, default: false. true value overrides hasPrev.
+	hasScrubbing : false, //optional. default to false. Enable scrubbing from control center progress bar
+
+	// iOS only, optional
+	skipForwardInterval : 15, //optional. default: 0.
 	skipBackwardInterval : 15, //optional. default: 0.
-	hasScrubbing : false, //optional. default to false. Enable scrubbing from control center progress bar 
 
 	// Android only, optional
 	// text displayed in the status bar when the notification (and the ticker) are updated
@@ -60,6 +62,9 @@ MusicControls.create({
 	nextIcon: 'media_next',
 	closeIcon: 'media_close',
 	notificationIcon: 'notification'
+
+	// Browser only, optional
+	createAudioHandler: true, // create a audio element with a blank mp3, optional, required if using the media control before creating an audio element, default: false
 }, onSuccess, onError);
 ```
 
