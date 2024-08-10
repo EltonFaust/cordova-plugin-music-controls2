@@ -1,4 +1,3 @@
-;(() => {
 let audioEl;
 let sourceEl;
 
@@ -55,17 +54,16 @@ const initialize = async (data) => {
         ['seekto', 'music-controls-seek-to', data.hasScrubbing, ({ seekTime }) => ({ position: Math.min(audioDuration, seekTime) })],
     ].reduce((c, [evtRec, evtSend, useAction, extract]) => {
         try {
-            const ext = extract || (() => ({}));
-
-            window.navigator.mediaSession.setActionHandler(
-                evtRec,
-                useAction
-                    ? (data) => onUpdate(JSON.stringify({ message: evtSend, ...ext(data) }))
-                    : null
-            );
-
             if (!useAction) {
+                window.navigator.mediaSession.setActionHandler(evtRec, null);
                 return c;
+            } else if (!actionHandlers.includes(evtRec)) {
+                const ext = extract || (() => ({}));
+
+                window.navigator.mediaSession.setActionHandler(
+                    evtRec,
+                    (data) => onUpdate(JSON.stringify({ message: evtSend, ...ext(data) })),
+                );
             }
 
             return [...c, evtRec];
@@ -179,4 +177,3 @@ require('cordova/exec/proxy').add('MusicControls', {
         onUpdate = _onUpdate;
     },
 });
-})();
