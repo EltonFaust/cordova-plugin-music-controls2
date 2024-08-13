@@ -46,7 +46,7 @@ const initialize = async (data) => {
     actionHandlers = [
         ['play', 'music-controls-play', true],
         ['pause', 'music-controls-pause', true],
-        ['stop', 'music-controls-stop', true],
+        ['stop', 'music-controls-destroy', true],
         ['previoustrack', 'music-controls-next', data.hasPrev],
         ['nexttrack', 'music-controls-previous', data.hasNext],
         ['seekbackward', 'music-controls-seek-to', data.hasSkipForward, ({ seekOffset }) => ({ position: Math.max(0, audioElapsed - seekOffset) })],
