@@ -97,7 +97,7 @@ function events(action) {
     	case 'music-controls-toggle-play-pause' :
 			// Do something
 			break;
-		// Lockscreen seek controls (iOS only)
+		// Lockscreen seek controls (iOS/browser only)
     	case 'music-controls-seek-to':
 			const seekToInSeconds = JSON.parse(action).position;
 			MusicControls.updateElapsed({

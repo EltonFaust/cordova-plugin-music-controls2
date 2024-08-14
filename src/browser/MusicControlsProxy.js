@@ -1,3 +1,4 @@
+
 let audioEl;
 let sourceEl;
 
@@ -31,7 +32,11 @@ const initialize = async (data) => {
         // mp3 blank audio, most common support
         sourceEl.src = 'data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAwAAAbAAqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV////////////////////////////////////////////AAAAAExhdmM1OC4xMwAAAAAAAAAAAAAAACQDkAAAAAAAAAGw9wrNaQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/+MYxAAAAANIAAAAAExBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV/+MYxDsAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV/+MYxHYAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV';
 
-        audioEl.append(sourceEl)
+        audioEl.appendChild(sourceEl);
+        audioEl.style.setProperty('display', 'none');
+
+        document.body.appendChild(audioEl);
+
         audioEl.load();
         audioEl.loop = true;
 
@@ -46,27 +51,38 @@ const initialize = async (data) => {
     actionHandlers = [
         ['play', 'music-controls-play', true],
         ['pause', 'music-controls-pause', true],
-        ['stop', 'music-controls-destroy', true],
+        ['stop', 'music-controls-destroy', true, null, () => setState(STATE_NONE)],
         ['previoustrack', 'music-controls-next', data.hasPrev],
         ['nexttrack', 'music-controls-previous', data.hasNext],
         ['seekbackward', 'music-controls-seek-to', data.hasSkipForward, ({ seekOffset }) => ({ position: Math.max(0, audioElapsed - seekOffset) })],
         ['seekforward', 'music-controls-seek-to', data.hasSkipBackward, ({ seekOffset }) => ({ position: Math.min(audioDuration, audioElapsed + seekOffset) })],
         ['seekto', 'music-controls-seek-to', data.hasScrubbing, ({ seekTime }) => ({ position: Math.min(audioDuration, seekTime) })],
-    ].reduce((c, [evtRec, evtSend, useAction, extract]) => {
+    ].reduce((c, [evtRec, evtSend, useAction, extract, postAction]) => {
         try {
-            if (!useAction) {
-                window.navigator.mediaSession.setActionHandler(evtRec, null);
-                return c;
-            } else if (!actionHandlers.includes(evtRec)) {
+            if (useAction) {
+                if (actionHandlers.includes(evtRec)) {
+                    return c;
+                }
+
                 const ext = extract || (() => ({}));
+                const poac = postAction || (() => {});
 
                 window.navigator.mediaSession.setActionHandler(
                     evtRec,
-                    (data) => onUpdate(JSON.stringify({ message: evtSend, ...ext(data) })),
+                    (data) => {
+                        onUpdate(JSON.stringify({ message: evtSend, ...ext(data) }));
+                        poac();
+                    },
                 );
+
+                return [...c, evtRec];
             }
 
-            return [...c, evtRec];
+            if (actionHandlers.includes(evtRec)) {
+                window.navigator.mediaSession.setActionHandler(evtRec, null);
+            }
+
+            return c;
         } catch (e) {
             // can't add event handler
             return c;
@@ -110,12 +126,15 @@ require('cordova/exec/proxy').add('MusicControls', {
         const mediaMetadata = {
             title: data.track,
             artist: data.artist,
-            album: data.album || null,
+            album: data.album,
         };
 
         if (data.cover) {
+            // resolve the url to prevent problems with relative locales (eg: /assets/imgs/cover.png)
+            const resolved = new URL(data.cover, window.location.href);
+
             mediaMetadata.artwork = [{
-                src: data.cover,
+                src: resolved.toString(),
                 sizes: 'any',
             }];
         }
@@ -169,6 +188,8 @@ require('cordova/exec/proxy').add('MusicControls', {
     destroy: (successCallback, errorCallback, params) => {
         // Remove events
         destroy();
+        onUpdate(JSON.stringify({ message: 'music-controls-stop-listening' }));
+        onUpdate = () => {};
         successCallback('success');
     },
 
