@@ -104,6 +104,9 @@ const destroy = () => {
         window.navigator.mediaSession.setActionHandler(evtRec, null);
     });
 
+    // unset metadata
+    window.navigator.mediaSession.metadata = null;
+
     if (audioEl) {
         sourceEl.remove();
         audioEl.remove();
